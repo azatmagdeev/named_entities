@@ -9,24 +9,47 @@
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>Разметка</title>
     <style>
+        body {
+
+        }
+
         span {
-            /*background-color: aqua;*/
+            background-color: white;
+            font-size: small;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 2px 3px 0 3px;
         }
 
-        .red {
-            background-color: indianred
+
+        .red, red {
+            background-color: rgba(100%, 0%, 0%, 0.4);
+            border-radius: 5px;
+            padding: 2px;
         }
 
-        .blue {
-            background-color: deepskyblue
+        .blue, blue {
+            background-color: rgba(0%, 0%, 100%, 0.4);
+            border-radius: 5px;
+            padding: 3px;
         }
 
-        .green {
-            background-color: lawngreen
+        .green, green {
+            background-color: rgba(0%, 100%, 0%, 0.4);
+            border-radius: 5px;
+            padding: 3px;
+        }
+
+        red, green, blue {
+            /*content: "some";*/
         }
 
         name {
             background-color: pink;
+        }
+        div#p{
+            height: 70vh;
+            overflow: scroll;
         }
     </style>
 </head>
@@ -37,13 +60,39 @@
             <h1>Разметка</h1>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col">
+            <details>
+                <summary>Загрузить текст</summary>
+                <div class="row mt-3">
+                    <div class="col">
+                        <form id="loadText">
+                            Загрузите файл <input class="form-control-file" name="my_file" id="my_file" type="file" accept="text">
+                            <button>Ok</button>
+                        </form>
+                    </div>
+                    <div class="col">
+                        <form id="insertText">
+                            <label for=""> Или вставьте текст</label>
+                            <textarea rows="1" class="form-control"></textarea>
+                            <button>Ok</button>
+                        </form>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </div>
     <div class="row">
         <div class="col">
-            <p id="p" style="border:1px solid;padding: 5px">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusantium aliquid, animi assumenda blanditiis cum delectus dolores eius eligendi, harum illum iste iusto laudantium quam quas quos sit ullam veniam veritatis?
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusantium aliquid, animi assumenda blanditiis cum delectus dolores eius eligendi, harum illum iste iusto laudantium quam quas quos sit ullam veniam veritatis?
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusantium aliquid, animi assumenda blanditiis cum delectus dolores eius eligendi, harum illum iste iusto laudantium quam quas quos sit ullam veniam veritatis?
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusantium aliquid, animi assumenda blanditiis cum delectus dolores eius eligendi, harum illum iste iusto laudantium quam quas quos sit ullam veniam veritatis?</p>
-            <button id="parseBtn">Parse!</button>
+            <div class="row">
+                <div id="p" style="border:1px solid;padding: 5px"></div>
+            </div>
+            <div class="row mt-3">
+                <button id="parseBtn" class="btn btn-outline-primary mr-3">Parse!</button>
+                <a download="named-entities.xml" id="test" href="#" style="display:none">
+                    Скачать xml-файл
+                </a>
+            </div>
         </div>
         <div class="col">
             <button class="red" id="red">red</button>
