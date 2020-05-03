@@ -1,12 +1,51 @@
-// import './books.xml';
+class Tag {
+    constructor(name, tag, color) {
+        this.name = name;
+        this.tag = tag;
+        this.color = color;
+        this.entities = [];
+    }
 
+    update(name, tag, color) {
+        name ? this.name = name : null;
+        tag ? this.tag = tag : null;
+        color ? this.color = color : null;
+    }
+}
 
-const redBtn = document.getElementById('red');
-const blueBtn = document.getElementById('blue');
-const greenBtn = document.getElementById('green');
-const buttons = [redBtn, blueBtn, greenBtn];
+class TagList {
+    constructor() {
+        this.items = [];
+    }
+
+    addTagToList(tag) {
+        this.items.push(tag);
+        return this.items;
+    }
+
+    removeTagFromList(tag) {
+        return this.items.filter((item) => tag.tag !== item.tag)
+    }
+}
+
+const buttons = [];
+
+const personTag = new Tag('Персона', 'person', 'rgba(100%, 0%, 0%, 0.4)');
+const locationTag = new Tag('Место', 'loc', 'rgba(0%, 0%, 100%, 0.4)');
+const timeTag = new Tag('Время', 'time', 'rgba(0%, 100%, 0%, 0.4)');
+const tagList = new TagList();
+
+tagList.addTagToList(personTag);
+tagList.addTagToList(locationTag);
+tagList.addTagToList(timeTag);
+
 const list = document.getElementById('list');
 const parseBtn = document.getElementById('parseBtn');
+
+const p = document.getElementById('p');
+
+renderTagList();
+
 
 document.addEventListener('selectionchange', (e) => {
 
@@ -32,14 +71,16 @@ document.addEventListener('selectionchange', (e) => {
                 console.log('?????')
             } else {
                 const li = document.createElement('li');
-                li.textContent = `"${str}"`;
-                list.appendChild(li);
-                const tag = document.createElement(`${button.textContent}`);
-                // tag.className = button.className;
+                // li.textContent = `"${str}"`;
+                // list.appendChild(li);
+                const tag = document.createElement(`${button.item.tag}`);
+                tag.style = `background-color:${button.item.color};
+                            padding:2px;
+                            border-radius: 5px;`;
                 range.surroundContents(tag);
                 tag.innerHTML = tag.textContent + `
-<span>${button.textContent}</span>
-`;
+                <span>${button.item.tag}</span>
+                `;
             }
         });
     }
@@ -49,7 +90,7 @@ document.addEventListener('selectionchange', (e) => {
 const parser = new DOMParser();
 
 
-const p = document.getElementById('p');
+
 p.textContent = `Песков заявил о возможном обращении Путина к россиянам 9 мая
 16:15 02.05.2020
 10940
@@ -82,7 +123,6 @@ parseBtn.addEventListener('click', () => {
 });
 
 
-
 const fileForm = document.getElementById('my_file');
 
 fileForm.addEventListener('input', () => {
@@ -100,13 +140,13 @@ insertForm[1].addEventListener('click', (e) => {
 })
 
 const loadForm = document.getElementById('loadText');
-loadForm[1].addEventListener('click',e=>{
+loadForm[1].addEventListener('click', e => {
     e.preventDefault();
     console.dir(loadForm[0]);
     const file = loadForm[0].files[0];
 
     const reader = new FileReader();
-    reader.addEventListener('load',(e)=>{
+    reader.addEventListener('load', (e) => {
         console.log(e);
         p.innerHTML = String(e.target.result);
         document.getElementsByTagName('details')[0].open = false;
@@ -119,3 +159,30 @@ loadForm[1].addEventListener('click',e=>{
 
 // console.log(new File());
 
+const addTagForm = document.getElementById('addTag');
+addTagForm[3].addEventListener('click', e => {
+    e.preventDefault();
+    tagList.addTagToList(new Tag(
+        addTagForm[0].value,
+        addTagForm[1].value,
+        addTagForm[2].value,
+    ));
+    document.getElementsByTagName('details')[1].open = false;
+
+    renderTagList();
+});
+
+function renderTagList() {
+    document.getElementById('tagList').innerHTML = '';
+    tagList.items.map((item) => {
+        const button = document.createElement('button');
+        button.className = 'btn';
+        button.style.margin = '1em'
+        button.style.backgroundColor = item.color;
+        button.style.display = 'block';
+        button.innerHTML = `${item.name} <span>${item.tag}</span>`;
+        document.getElementById('tagList').appendChild(button);
+        button.item = item;
+        buttons.push(button);
+    });
+}

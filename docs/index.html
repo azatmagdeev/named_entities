@@ -13,41 +13,25 @@
 
         }
 
+        .formsBlock {
+            background-color: lightcyan;
+            border-radius: 10px;
+        }
+
         span {
             background-color: white;
             font-size: small;
             font-weight: bold;
             border-radius: 5px;
-            padding: 2px 3px 0 3px;
+            padding: 2px 3px 1px 3px;
         }
 
+        /*button {*/
+        /*    border-radius: 5px;*/
+        /*    padding: 2px;*/
+        /*}*/
 
-        .red, red {
-            background-color: rgba(100%, 0%, 0%, 0.4);
-            border-radius: 5px;
-            padding: 2px;
-        }
-
-        .blue, blue {
-            background-color: rgba(0%, 0%, 100%, 0.4);
-            border-radius: 5px;
-            padding: 3px;
-        }
-
-        .green, green {
-            background-color: rgba(0%, 100%, 0%, 0.4);
-            border-radius: 5px;
-            padding: 3px;
-        }
-
-        red, green, blue {
-            /*content: "some";*/
-        }
-
-        name {
-            background-color: pink;
-        }
-        div#p{
+        p#p {
             height: 70vh;
             overflow: scroll;
         }
@@ -64,18 +48,20 @@
         <div class="col">
             <details>
                 <summary>Загрузить текст</summary>
-                <div class="row mt-3">
+                <div class="row mt-3 formsBlock">
                     <div class="col">
                         <form id="loadText">
-                            Загрузите файл <input class="form-control-file" name="my_file" id="my_file" type="file" accept="text">
-                            <button>Ok</button>
+                            Загрузите файл .txt/.xml <input class="form-control-file m-1 btn-outline-info"
+                                                            name="my_file" id="my_file" type="file"
+                                                            accept="text">
+                            <button class="btn btn-outline-primary">Ok</button>
                         </form>
                     </div>
                     <div class="col">
                         <form id="insertText">
-                            <label for=""> Или вставьте текст</label>
-                            <textarea rows="1" class="form-control"></textarea>
-                            <button>Ok</button>
+                            Или вставьте текст
+                            <textarea id="text" rows="1" class="form-control"></textarea>
+                            <button class="btn btn-outline-primary">Ok</button>
                         </form>
                     </div>
                 </div>
@@ -83,22 +69,34 @@
         </div>
     </div>
     <div class="row">
-        <div class="col">
+        <div class="col col-sm-7">
             <div class="row">
-                <div id="p" style="border:1px solid;padding: 5px"></div>
+                <p id="p" style="border:1px solid;padding: 5px"></p>
             </div>
             <div class="row mt-3">
-                <button id="parseBtn" class="btn btn-outline-primary mr-3">Parse!</button>
+                <button id="parseBtn" class="btn btn-outline-primary mr-3">Сохранить как .xml</button>
                 <a download="named-entities.xml" id="test" href="#" style="display:none">
-                    Скачать xml-файл
+                    Скачать файл
                 </a>
             </div>
         </div>
-        <div class="col">
-            <button class="red" id="red">red</button>
-            <button class="blue" id="blue">blue</button>
-            <button class="green" id="green">green</button>
-            <ul id="list"></ul>
+        <div class="col col-sm-5">
+            <ul>
+                <details>
+                    <summary>Добавить метку</summary>
+                    <form id="addTag" class="pl-4 mt-2 ml-3 formsBlock">
+                        <label>Название<input type="text" class="form-control" placeholder=""></label>
+                        <label>тэг<input type="text" class="form-control" placeholder=""></label>
+                        <label>Цвет<input type="color" class="form-control" placeholder="цвет"></label>
+                        <button class="btn-outline-primary">Сохранить</button>
+                    </form>
+                </details>
+            </ul>
+
+            <ul id="tagList">
+
+            </ul>
+
         </div>
     </div>
     <div class="row">
