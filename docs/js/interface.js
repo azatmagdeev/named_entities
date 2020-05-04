@@ -6,6 +6,7 @@ export class Interface {
         this.tagList = tagList;
         this.markupList = [];
         this.nextId = 1;
+        this.selection = null;
 
         this.styles = document.getElementById('styles');
         this.saveBtn = document.getElementById('saveBtn');
@@ -32,27 +33,52 @@ export class Interface {
             border-radius: 5px;
             }
             `;
+
+            item.button.addEventListener('click', () => {
+                if (this.selection) {
+                    if (this.selection.anchorNode.parentElement === this.p) {
+                        const range = new Range();
+                        if (this.selection.focusOffset > this.selection.anchorOffset) {
+                            range.setStart(this.selection.anchorNode, this.selection.anchorOffset);
+                            range.setEnd(this.selection.anchorNode, this.selection.focusOffset);
+                        } else {
+                            range.setStart(this.selection.anchorNode, this.selection.focusOffset);
+                            range.setEnd(this.selection.anchorNode, this.selection.anchorOffset);
+                        }
+
+                        if (range.toString() !== "") {
+                            const tag = document.createElement(`${item.tag}`);
+                            tag.id = String(this.nextId++);
+                            range.surroundContents(tag);
+                            tag.innerHTML = tag.textContent + `
+                    <span>${item.tag}</span>`;
+                            this.markupList.push(tag);
+                            this.renderMarkupList();
+                            this.selection = null;
+                        }
+                    }
+                }
+            });
         })
     }
 
     addListeners() {
         document.addEventListener('selectionchange', () => {
             this.linkElement.style.display = 'none';
-            this.handleSelection()
+            this.selection = document.getSelection();
         });
 
         this.saveBtn.addEventListener('click', () => {
             const xmlStr =
                 `<?xml version="1.0" encoding="UTF-8"?><text>${this.p.innerHTML}</text>`;
             this.linkElement.href = 'data:text/plain,' + xmlStr;
-            this.linkElement.style.display = 'inline';
+            this.linkElement.click();
         });
 
         this.insertForm[1].addEventListener('click', (e) => {
             e.preventDefault();
             this.p.innerHTML = this.insertForm[0].value;
             document.getElementsByTagName('details')[0].open = false;
-            this.linkElement.style.display = 'none';
         })
 
         this.loadForm[1].addEventListener('click', e => {
@@ -64,8 +90,6 @@ export class Interface {
                 document.getElementsByTagName('details')[0].open = false;
             })
             reader.readAsText(file);
-
-            this.linkElement.style.display = 'none';
         })
 
         this.addTagForm[3].addEventListener('click', e => {
@@ -78,36 +102,6 @@ export class Interface {
             ));
             this.renderTagList();
         });
-    }
-
-    handleSelection() {
-        const selection = document.getSelection();
-
-        this.tagList.map(item => {
-            item.button.addEventListener('click', () => {
-
-                const range = new Range();
-                if (selection.focusOffset > selection.anchorOffset) {
-                    range.setStart(selection.anchorNode, selection.anchorOffset);
-                    range.setEnd(selection.anchorNode, selection.focusOffset);
-                } else {
-                    range.setStart(selection.anchorNode, selection.focusOffset);
-                    range.setEnd(selection.anchorNode, selection.anchorOffset);
-                }
-
-                const str = range.toString();
-                if (str === "") {
-                } else {
-                    const tag = document.createElement(`${item.tag}`);
-                    tag.id = String(this.nextId++);
-                    range.surroundContents(tag);
-                    tag.innerHTML = tag.textContent + `
-                    <span>${item.tag}</span>`;
-                    this.markupList.push(tag);
-                    this.renderMarkupList();
-                }
-            });
-        })
     }
 
     renderMarkupList() {

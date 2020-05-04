@@ -4,11 +4,13 @@ import {Interface} from "./interface.js"
 const personTag = new Tag('Персона', 'person', 'rgba(100%, 0%, 0%, 0.4)');
 const locationTag = new Tag('Место', 'loc', 'rgba(0%, 0%, 100%, 0.4)');
 const timeTag = new Tag('Время', 'time', 'rgba(0%, 100%, 0%, 0.4)');
+const dateTag = new Tag('Дата', 'date', 'rgba(100%, 100%, 0%, 0.4)');
 const tagList = [];
 
 
 tagList.push(personTag);
 tagList.push(locationTag);
+tagList.push(dateTag);
 tagList.push(timeTag);
 
 const view = new Interface(tagList);
