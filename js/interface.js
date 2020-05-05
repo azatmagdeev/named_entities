@@ -124,7 +124,7 @@ export class Interface {
             li.className = 'mb-1';
             li.innerHTML = element.outerHTML;
             const removeBtn = document.createElement('img');
-            removeBtn.src = "../img/delete.png";
+            removeBtn.src = "img/delete.png";
             removeBtn.style.height = "20px";
             li.appendChild(removeBtn);
             this.listElement.appendChild(li);
