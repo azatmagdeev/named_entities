@@ -1,4 +1,4 @@
-import {Tag} from "./lib.js";
+// import {Tag} from "./lib.js";
 
 export class Interface {
 
@@ -7,6 +7,7 @@ export class Interface {
         this.markupList = [];
         this.nextId = 1;
         this.selection = null;
+        this.selectedTagList = [];
 
         this.styles = document.getElementById('styles');
         this.saveBtn = document.getElementById('saveBtn');
@@ -16,16 +17,39 @@ export class Interface {
         this.linkElement = document.getElementById('link');
         this.insertForm = document.getElementById('insertText');
         this.loadForm = document.getElementById('loadText');
-        this.addTagForm = document.getElementById('addTag');
+        this.selectTagsForm = document.getElementById('selectTags');
         this.deleteAllBtn = document.getElementById('deleteAll');
+        this.detailsElement = document.getElementById('details');
 
-        this.renderTagList();
+        this.renderSelectList();
         this.addListeners();
+    }
+
+    renderSelectList() {
+        this.tagList.map((item, index) => {
+            const div = document.createElement('div');
+            div.innerHTML = `<label style=" background-color:${item.color};
+            padding:0.5em;
+            border-radius: 5px;"><input id=${index} type="checkbox" class="mr-1" checked>${item.button.innerHTML}</label>`;
+            div.appendChild(item.button);
+            this.selectTagsForm.appendChild(div);
+        })
+
+        this.defineSelectedTags()
+    }
+
+    defineSelectedTags() {
+        this.selectedTagList = [];
+        for (const input of this.selectTagsForm) {
+            input.checked ? this.selectedTagList.push(this.tagList[input.id]) : null;
+        }
+
+        this.renderTagList()
     }
 
     renderTagList() {
         this.tagListElement.innerHTML = '';
-        this.tagList.map((item) => {
+        this.selectedTagList.map((item) => {
             this.tagListElement.appendChild(item.button);
             this.styles.textContent += `
             ${item.tag}{
@@ -64,6 +88,21 @@ export class Interface {
     }
 
     addListeners() {
+
+        this.selectTagsForm.addEventListener('change', () => {
+            this.defineSelectedTags();
+        })
+
+        this.detailsElement.addEventListener('click', () => {
+            this.tagListElement.style.display = 'none';
+
+            setTimeout(() => {
+                this.detailsElement.open ? this.tagListElement.style.display = 'none'
+                    : this.tagListElement.style.display = 'block';
+            }, 0)
+
+        })
+
         document.addEventListener('selectionchange', () => {
             this.linkElement.style.display = 'none';
             this.selection = document.getSelection();
@@ -105,16 +144,16 @@ export class Interface {
             reader.readAsText(file);
         })
 
-        this.addTagForm[3].addEventListener('click', e => {
-            e.preventDefault();
-            document.getElementsByTagName('details')[1].open = false;
-            this.tagList.push(new Tag(
-                this.addTagForm[1].value,
-                this.addTagForm[0].value,
-                this.addTagForm[2].value,
-            ));
-            this.renderTagList();
-        });
+        // this.addTagForm[3].addEventListener('click', e => {
+        //     e.preventDefault();
+        //     document.getElementsByTagName('details')[1].open = false;
+        //     this.tagList.push(new Tag(
+        //         this.addTagForm[1].value,
+        //         this.addTagForm[0].value,
+        //         this.addTagForm[2].value,
+        //     ));
+        //     this.renderTagList();
+        // });
     }
 
     renderMarkupList() {

@@ -80,18 +80,12 @@
         </div>
         <div class="col">
             <div>
-                <details>
-                    <summary>Добавить вид метки</summary>
-                    <form id="addTag" class="p-1 mt-2 ml-3 formsBlock">
-                        <label>Название<input type="text" class="form-control" placeholder=""></label>
-                        <label>тэг<input type="text" class="form-control" placeholder=""></label>
-                        <label>Цвет<input type="color" class="form-control" placeholder="цвет"></label>
-                        <button class="btn btn-outline-primary">Сохранить</button>
-                    </form>
+                <details id="details" class="formsBlock">
+                    <summary>Выбрать метки</summary>
+                    <form id="selectTags" class="p-1 mt-2 ml-3 formsBlock"></form>
                 </details>
             </div>
-            <div id="tagList"></div>
-
+            <div id="tagList" class=""></div>
         </div>
         <div class="col">
             <button class="btn btn-outline-danger mb-2" id="deleteAll">Убрать все метки</button>
