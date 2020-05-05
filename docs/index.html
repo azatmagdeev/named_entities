@@ -44,22 +44,23 @@
                 <summary>Загрузить текст</summary>
                 <div class="row mt-3 p-2 formsBlock">
                     <div class="col">
+                        <form id="insertText">
+
+                            <label class="form-group">
+                                Вставьте текст
+                                <textarea id="text" rows="3" class="form-control"></textarea>
+                                <button class="btn btn-outline-primary">Ok</button>
+                            </label>
+
+                        </form>
                         <form id="loadText">
-                            Загрузите файл .txt/.xml
+                            Или загрузите xml-файл ранее редактируемый в этом приложении
                             <input class="form-control-file m-1 btn-outline-info"
                                    type="file"
-                                   accept="text">
-                            <button class="btn btn-outline-primary">Ok</button>
+                                   accept="text/xml">
+                            <button class="btn btn-outline-primary form-inline">Ok</button>
                         </form>
-                    </div>
-                    <div class="col">
-                        <form id="insertText">
-                            Или вставьте текст
-                            <label>
-                                <textarea id="text" rows="1" class="form-control"></textarea>
-                            </label>
-                            <button class="btn btn-outline-primary">Ok</button>
-                        </form>
+
                     </div>
                 </div>
             </details>
@@ -93,6 +94,7 @@
 
         </div>
         <div class="col">
+            <button class="btn btn-outline-danger mb-2" id="deleteAll">Убрать все метки</button>
             <ul id="list"></ul>
         </div>
     </div>

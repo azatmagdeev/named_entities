@@ -17,6 +17,7 @@ export class Interface {
         this.insertForm = document.getElementById('insertText');
         this.loadForm = document.getElementById('loadText');
         this.addTagForm = document.getElementById('addTag');
+        this.deleteAllBtn = document.getElementById('deleteAll');
 
         this.renderTagList();
         this.addListeners();
@@ -68,9 +69,16 @@ export class Interface {
             this.selection = document.getSelection();
         });
 
+        this.deleteAllBtn.addEventListener('click', () => {
+            for (let i = this.listElement.children.length - 1; i >= 0; i--) {
+                const el = this.listElement.children[i];
+                el.querySelector('img').click()
+            }
+        })
+
         this.saveBtn.addEventListener('click', () => {
             const xmlStr =
-                `<?xml version="1.0" encoding="UTF-8"?><text>${this.p.innerHTML}</text>`;
+                `<?xml version="1.0" encoding="UTF-8"?><markup>${this.p.innerHTML}</markup>`;
             this.linkElement.href = 'data:text/plain,' + xmlStr;
             this.linkElement.click();
         });
@@ -86,7 +94,12 @@ export class Interface {
             const file = this.loadForm[0].files[0];
             const reader = new FileReader();
             reader.addEventListener('load', (e) => {
-                this.p.innerHTML = String(e.target.result);
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(`${e.target.result}`, 'text/xml')
+                this.p.innerHTML = doc.children[0].innerHTML;
+                this.markupList = [...doc.children[0].children];
+                console.log(this.markupList);
+                this.renderMarkupList();
                 document.getElementsByTagName('details')[0].open = false;
             })
             reader.readAsText(file);
@@ -108,10 +121,11 @@ export class Interface {
         this.listElement.innerHTML = '';
         this.markupList.map(element => {
             const li = document.createElement('li');
-            li.innerHTML = element.innerHTML;
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'x'
-            removeBtn.className = 'btn btn-sm btn-outline-danger'
+            li.className = 'mb-1';
+            li.innerHTML = element.outerHTML;
+            const removeBtn = document.createElement('img');
+            removeBtn.src = "../img/delete.png";
+            removeBtn.style.height = "20px";
             li.appendChild(removeBtn);
             this.listElement.appendChild(li);
 
@@ -122,7 +136,6 @@ export class Interface {
                 this.listElement.removeChild(li);
                 this.markupList = this.markupList.filter(value => value !== element)
                 this.renderMarkupList();
-
             })
         })
     }

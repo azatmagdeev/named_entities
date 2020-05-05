@@ -12,6 +12,19 @@ tagList.push(personTag);
 tagList.push(locationTag);
 tagList.push(dateTag);
 tagList.push(timeTag);
+tagList.push(new Tag(
+    "Организация", "org", 'rgba(0%, 100%, 100%, 0.4)'
+));
+tagList.push(new Tag(
+    "Должность", "post", 'rgba(100%, 50%, 100%, 1)'
+));
+tagList.push(new Tag(
+    "Количество", "num", 'rgba(0%, 100%, 0%, 1)'
+));
+tagList.push(new Tag(
+    "Валюта", "cur", 'rgba(100%, 50%, 25%, 1)'
+));
+
 
 const view = new Interface(tagList);
 
