@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Разметка</title>
+    <style id="styles">
+
+        .formsBlock {
+            background-color: lightcyan;
+            border-radius: 10px;
+        }
+
+        span {
+            background-color: white;
+            font-size: small;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 2px 3px 1px 3px;
+        }
+
+        p#p {
+            height: 70vh;
+            width: 100%;
+            overflow: scroll;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1>Разметка</h1>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col formsBlock">
+            <details class="">
+                <summary>Загрузить текст</summary>
+                <div class="row mt-3 p-2 formsBlock">
+                    <div class="col">
+                        <form id="insertText">
+
+                            <label class="form-group">
+                                Вставьте текст
+                                <textarea id="text" rows="3" class="form-control"></textarea>
+                                <button class="btn btn-outline-primary">Ok</button>
+                            </label>
+
+                        </form>
+                        <form id="loadText">
+                            Или загрузите xml-файл ранее редактируемый в этом приложении
+                            <input class="form-control-file m-1 btn-outline-info"
+                                   type="file"
+                                   accept="text/xml">
+                            <button class="btn btn-outline-primary form-inline">Ok</button>
+                        </form>
+
+                    </div>
+                </div>
+            </details>
+        </div>
+    </div>
+    <div class="row flex-nowrap">
+        <div class="col col-6 col-sm-6">
+            <div class="row">
+                <p id="p" style="border:1px solid;padding: 5px"></p>
+            </div>
+            <div class="row mt-3">
+                <button id="saveBtn" class="btn btn-outline-primary mr-3">Сохранить как .xml</button>
+                <a download="named-entities.xml" id="link" href="#" style="display:none">
+                    Скачать файл
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div>
+                <details id="details" class="formsBlock">
+                    <summary>Выбрать метки</summary>
+                    <form id="selectTags" class="p-1 mt-2 ml-3 formsBlock"></form>
+                </details>
+            </div>
+            <div id="tagList" class=""></div>
+        </div>
+        <div class="col">
+            <button class="btn btn-outline-danger mb-2" id="deleteAll">Убрать все метки</button>
+            <ul id="list"></ul>
+        </div>
+    </div>
+
+</div>
+<script>
+    class Tag {
+        constructor(name, tag, color) {
+            this.name = name;
+            this.tag = tag;
+            this.color = color;
+
+            this.button = document.createElement('button');
+            this.button.className = 'btn';
+            this.button.style.margin = '0.5em'
+            this.button.style.backgroundColor = this.color;
+            this.button.style.display = 'block';
+            this.button.innerHTML = `${this.name} <span>${this.tag}</span>`;
+        }
+    }
+
+    class Interface {
+
+        constructor(tagList) {
+            this.tagList = tagList;
+            this.markupList = [];
+            this.nextId = 1;
+            this.selection = null;
+            this.selectedTagList = [];
+
+            this.styles = document.getElementById('styles');
+            this.saveBtn = document.getElementById('saveBtn');
+            this.p = document.getElementById('p');
+            this.listElement = document.getElementById('list');
+            this.tagListElement = document.getElementById('tagList');
+            this.linkElement = document.getElementById('link');
+            this.insertForm = document.getElementById('insertText');
+            this.loadForm = document.getElementById('loadText');
+            this.selectTagsForm = document.getElementById('selectTags');
+            this.deleteAllBtn = document.getElementById('deleteAll');
+            this.detailsElement = document.getElementById('details');
+
+            this.renderSelectList();
+            this.addListeners();
+        }
+
+        renderSelectList() {
+            this.tagList.map((item, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `<label style=" background-color:${item.color};
+            padding:0.5em;
+            border-radius: 5px;"><input id=${index} type="checkbox" class="mr-1" checked>${item.button.innerHTML}</label>`;
+                div.appendChild(item.button);
+                this.selectTagsForm.appendChild(div);
+            })
+
+            this.defineSelectedTags()
+        }
+
+        defineSelectedTags() {
+            this.selectedTagList = [];
+            for (const input of this.selectTagsForm) {
+                input.checked ? this.selectedTagList.push(this.tagList[input.id]) : null;
+            }
+
+            this.renderTagList()
+        }
+
+        renderTagList() {
+            this.tagListElement.innerHTML = '';
+            this.selectedTagList.map((item) => {
+                this.tagListElement.appendChild(item.button);
+                this.styles.textContent += `
+            ${item.tag}{
+            background-color:${item.color};
+            padding:2px;
+            border-radius: 5px;
+            }
+            `;
+
+                item.button.addEventListener('click', () => {
+                    if (this.selection) {
+                        if (this.selection.anchorNode.parentElement === this.p) {
+                            const range = new Range();
+                            if (this.selection.focusOffset > this.selection.anchorOffset) {
+                                range.setStart(this.selection.anchorNode, this.selection.anchorOffset);
+                                range.setEnd(this.selection.anchorNode, this.selection.focusOffset);
+                            } else {
+                                range.setStart(this.selection.anchorNode, this.selection.focusOffset);
+                                range.setEnd(this.selection.anchorNode, this.selection.anchorOffset);
+                            }
+
+                            if (range.toString() !== "") {
+                                const tag = document.createElement(`${item.tag}`);
+                                tag.id = String(this.nextId++);
+                                range.surroundContents(tag);
+                                tag.innerHTML = tag.textContent + `
+                    <span>${item.tag}</span>`;
+                                this.markupList.push(tag);
+                                this.renderMarkupList();
+                                this.selection = null;
+                            }
+                        }
+                    }
+                });
+            })
+        }
+
+        addListeners() {
+
+            this.selectTagsForm.addEventListener('change', () => {
+                this.defineSelectedTags();
+            })
+
+            this.detailsElement.addEventListener('click', () => {
+                this.tagListElement.style.display = 'none';
+
+                setTimeout(() => {
+                    this.detailsElement.open ? this.tagListElement.style.display = 'none'
+                        : this.tagListElement.style.display = 'block';
+                }, 0)
+
+            })
+
+            document.addEventListener('selectionchange', () => {
+                this.linkElement.style.display = 'none';
+                this.selection = document.getSelection();
+            });
+
+            this.deleteAllBtn.addEventListener('click', () => {
+                for (let i = this.listElement.children.length - 1; i >= 0; i--) {
+                    const el = this.listElement.children[i];
+                    el.querySelector('div').click()
+                }
+            })
+
+            this.saveBtn.addEventListener('click', () => {
+                const xmlStr =
+                    `<?xml version="1.0" encoding="UTF-8"?><markup>${this.p.innerHTML}</markup>`;
+                this.linkElement.href = 'data:text/plain,' + xmlStr;
+                this.linkElement.click();
+            });
+
+            this.insertForm[1].addEventListener('click', (e) => {
+                e.preventDefault();
+                this.p.innerHTML = this.insertForm[0].value;
+                document.getElementsByTagName('details')[0].open = false;
+            })
+
+            this.loadForm[1].addEventListener('click', e => {
+                e.preventDefault();
+                const file = this.loadForm[0].files[0];
+                const reader = new FileReader();
+                reader.addEventListener('load', (e) => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(`${e.target.result}`, 'text/xml')
+                    this.p.innerHTML = doc.children[0].innerHTML;
+                    this.markupList = [...doc.children[0].children];
+                    console.log(this.markupList);
+                    this.renderMarkupList();
+                    document.getElementsByTagName('details')[0].open = false;
+                })
+                reader.readAsText(file);
+            })
+        }
+
+        renderMarkupList() {
+            this.listElement.innerHTML = '';
+            this.markupList.map(element => {
+                const li = document.createElement('li');
+                li.className = 'mb-1';
+                li.innerHTML = element.outerHTML;
+                const removeBtn = document.createElement('div');
+                removeBtn.style.display = 'inline';
+                removeBtn.className = 'ml-2'
+                removeBtn.innerHTML = `<svg  viewBox="0 0 12 16" width="12" height="16" aria-hidden="true">
+                 <path fill-rule="evenodd" d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"></path>
+                 </svg>`
+                li.appendChild(removeBtn);
+                this.listElement.appendChild(li);
+
+                removeBtn.addEventListener('click', () => {
+                    document.getElementById(element.id) ?
+                        document.getElementById(element.id).outerHTML = element.firstChild.textContent
+                        : null;
+                    this.listElement.removeChild(li);
+                    this.markupList = this.markupList.filter(value => value !== element)
+                    this.renderMarkupList();
+                })
+            })
+        }
+    }
+
+    const personTag = new Tag('Персона', 'person', 'rgba(100%, 0%, 0%, 0.4)');
+    const locationTag = new Tag('Место', 'loc', 'rgba(0%, 0%, 100%, 0.4)');
+    const timeTag = new Tag('Время', 'time', 'rgba(0%, 100%, 0%, 0.4)');
+    const dateTag = new Tag('Дата', 'date', 'rgba(100%, 100%, 0%, 0.4)');
+    const tagList = [];
+
+    tagList.push(personTag);
+    tagList.push(locationTag);
+    tagList.push(dateTag);
+    tagList.push(timeTag);
+    tagList.push(new Tag(
+        "Организация", "org", 'rgba(0%, 100%, 100%, 0.4)'
+    ));
+    tagList.push(new Tag(
+        "Должность", "post", 'rgba(100%, 50%, 100%, 1)'
+    ));
+    tagList.push(new Tag(
+        "Количество", "num", 'rgba(0%, 100%, 0%, 1)'
+    ));
+    tagList.push(new Tag(
+        "Валюта", "cur", 'rgba(100%, 50%, 25%, 1)'
+    ));
+
+    const view = new Interface(tagList);
+
+    view.p.textContent = `Песков заявил о возможном обращении Путина к россиянам 9 мая
+16:15 02.05.2020
+10940
+Президент РФ Владимир Путин во время онлайн-встречи с участниками общероссийской акции взаимопомощи МыВместе
+© РИА Новости / Алексей Дружинин
+Перейти в фотобанк
+МОСКВА, 2 мая — РИА Новости. Президент России Владимир Путин 9 мая обратится к россиянам, заявил его пресс-секретарь Дмитрий Песков.
+"Мы ожидаем, что 9 мая президент возложит цветы к Вечному огню и именно оттуда обратится ко всем россиянам", — сказал он в опубликованном анонсе программы "Москва, Кремль. Путин".
+
+До этого глава государства несколько раз обращался к россиянам, последний раз — 28 апреля. Тогда он озвучил результаты работы по мобилизации промышленности и системы здравоохранения, а также дал новые поручения, призванные поддержать экономику и помочь регионам справиться с коронавирусом.
+Кроме того, Путин объявил о продлении нерабочих дней до 11 мая.`;
+
+</script>
+</body>
+</html>

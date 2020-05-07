@@ -1,4 +1,4 @@
-// import {Tag} from "./lib.js";
+import {Tag} from "./lib.js";
 
 export class Interface {
 
@@ -20,28 +20,34 @@ export class Interface {
         this.selectTagsForm = document.getElementById('selectTags');
         this.deleteAllBtn = document.getElementById('deleteAll');
         this.detailsElement = document.getElementById('details');
+        this.addTagForm = document.getElementById('addTag');
+        this.addTagDetails = document.getElementById('addTagDetails');
 
         this.renderSelectList();
         this.addListeners();
     }
 
     renderSelectList() {
+        this.selectTagsForm.innerHTML = '';
         this.tagList.map((item, index) => {
             const div = document.createElement('div');
-            div.innerHTML = `<label style=" background-color:${item.color};
-            padding:0.5em;
-            border-radius: 5px;"><input id=${index} type="checkbox" class="mr-1" checked>${item.button.innerHTML}</label>`;
-            div.appendChild(item.button);
+            div.innerHTML =
+                `<label style=" background-color:${item.color};padding:0.5em;
+                    border-radius: 5px; width: 100%">
+                    <input id=${index} type="checkbox" class="mr-1" ${item.checked ? "checked" : null}>
+                    ${item.button.innerHTML}
+                 </label>`;
+            // div.appendChild(item.button);
             this.selectTagsForm.appendChild(div);
         })
 
-        this.defineSelectedTags()
+        this.renderTagList()
     }
 
     defineSelectedTags() {
-        this.selectedTagList = [];
+        // this.selectedTagList = [];
         for (const input of this.selectTagsForm) {
-            input.checked ? this.selectedTagList.push(this.tagList[input.id]) : null;
+            input.checked ? this.tagList[input.id].checked = true : this.tagList[input.id].checked = false;
         }
 
         this.renderTagList()
@@ -49,15 +55,18 @@ export class Interface {
 
     renderTagList() {
         this.tagListElement.innerHTML = '';
-        this.selectedTagList.map((item) => {
-            this.tagListElement.appendChild(item.button);
-            this.styles.textContent += `
+        this.tagList.map((item) => {
+            if (item.checked) {
+                this.tagListElement.appendChild(item.button);
+                this.styles.textContent += `
             ${item.tag}{
             background-color:${item.color};
             padding:2px;
             border-radius: 5px;
             }
             `;
+            }
+
 
             item.button.addEventListener('click', () => {
                 if (this.selection) {
@@ -90,17 +99,20 @@ export class Interface {
     addListeners() {
 
         this.selectTagsForm.addEventListener('change', () => {
-            this.defineSelectedTags();
+
+            for (let i = 0; i < this.selectTagsForm.length; i++) {
+                const input = this.selectTagsForm[i];
+                input.checked ? this.tagList[i].checked = true : this.tagList[i].checked = false;
+            }
+            this.renderTagList();
         })
 
         this.detailsElement.addEventListener('click', () => {
-            this.tagListElement.style.display = 'none';
+            this.checkOpenDetails();
+        })
 
-            setTimeout(() => {
-                this.detailsElement.open ? this.tagListElement.style.display = 'none'
-                    : this.tagListElement.style.display = 'block';
-            }, 0)
-
+        this.addTagDetails.addEventListener('click', () => {
+            this.checkOpenDetails();
         })
 
         document.addEventListener('selectionchange', () => {
@@ -144,16 +156,16 @@ export class Interface {
             reader.readAsText(file);
         })
 
-        // this.addTagForm[3].addEventListener('click', e => {
-        //     e.preventDefault();
-        //     document.getElementsByTagName('details')[1].open = false;
-        //     this.tagList.push(new Tag(
-        //         this.addTagForm[1].value,
-        //         this.addTagForm[0].value,
-        //         this.addTagForm[2].value,
-        //     ));
-        //     this.renderTagList();
-        // });
+        this.addTagForm[4].addEventListener('click', e => {
+            e.preventDefault();
+            document.getElementById('addTagDetails').open = false;
+            this.tagList.push(new Tag(
+                this.addTagForm[0].value,
+                this.addTagForm[1].value,
+                this.addTagForm[3].value
+            ));
+            this.renderSelectList();
+        });
     }
 
     renderMarkupList() {
@@ -180,5 +192,14 @@ export class Interface {
                 this.renderMarkupList();
             })
         })
+    }
+
+    checkOpenDetails() {
+        this.tagListElement.style.display = 'none';
+        setTimeout(() => {
+            this.detailsElement.open ? this.tagListElement.style.display = 'none'
+                : this.addTagDetails.open ? this.tagListElement.style.display = 'none'
+                : this.tagListElement.style.display = 'block';
+        }, 0)
     }
 }
