@@ -1,0 +1,24 @@
+{
+  "name": "named_entities",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "live-server": "^1.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "live-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azatmagdeev/named_entities.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/azatmagdeev/named_entities/issues"
+  },
+  "homepage": "https://github.com/azatmagdeev/named_entities#readme",
+  "description": ""
+}
