@@ -27,7 +27,10 @@
             height: 70vh;
             width: 100%;
             overflow: scroll;
+            border: 1px solid;
+            padding: 5px
         }
+
 
     </style>
 </head>
@@ -40,7 +43,7 @@
     </div>
     <div class="row mb-3">
         <div class="col formsBlock">
-            <details class="">
+            <details>
                 <summary>Загрузить текст</summary>
                 <div class="row mt-3 p-2 formsBlock">
                     <div class="col">
@@ -69,56 +72,85 @@
     <div class="row flex-nowrap">
         <div class="col col-6 col-sm-6">
             <div class="row">
-                <p id="p" style="border:1px solid;padding: 5px"></p>
+                <p id="p"></p>
             </div>
-            <div class="row mt-3">
-                <button id="saveBtn" class="btn btn-outline-primary mr-3">Сохранить как .xml</button>
-                <a download="named-entities.xml" id="link" href="#" style="display:none">
-                    Скачать файл
-                </a>
-            </div>
+            <!--            <div class="row mt-3">-->
+            <!--                -->
+            <!--            </div>-->
         </div>
         <div class="col">
             <div>
                 <details id="details" class="formsBlock">
                     <summary>Выбрать метки</summary>
-                    <form id="selectTags" class="p-1 mt-2 ml-3 formsBlock"></form>
+                    <form id="selectTags" class="p-1 mt-2 formsBlock"></form>
+                </details>
+                <details id="addTagDetails" class="formsBlock">
+                    <summary>Добавить метку</summary>
+                    <form id="addTag" class="p-1 mt-2 formsBlock">
+                        <input type="text" placeholder="Название" class="form-control">
+                        <input type="text" placeholder="тэг" class="form-control">
+
+                        <input type="text" placeholder="Цвет" class="form-control" onfocus="selectColor()">
+                        <input type="color" style="display:none">
+                        <button class="form-control">Сохранить</button>
+                        <script>
+                            function selectColor() {
+                                const form = document.getElementById('addTag');
+                                form[3].click();
+                                form[3].onchange = function () {
+                                    form[2].style.backgroundColor = form[3].value;
+                                    form[2].blur();
+                                }
+                            }
+                        </script>
+                    </form>
                 </details>
             </div>
             <div id="tagList" class=""></div>
         </div>
         <div class="col">
             <button class="btn btn-outline-danger mb-2" id="deleteAll">Убрать все метки</button>
-            <ul id="list"></ul>
+
+            <ul id="list">
+            </ul>
+
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col">
+            <button id="saveBtn" class="btn btn-outline-primary mr-3">Сохранить как .xml</button>
+            <a download="named-entities.xml" id="link" href="#" style="display:none">
+                Скачать файл
+            </a>
         </div>
     </div>
 
 </div>
 <script>
-    class Tag {
-        constructor(name, tag, color) {
-            this.name = name;
-            this.tag = tag;
-            this.color = color;
+    class Tag { // объявляю класс для создания меток
+        constructor(name, tag, color, checked = true) {
+            this.name = name; // у каждого экземпляра метки есть: своё имя
+            this.tag = tag; // xml тэг
+            this.color = color; // цвет
+            this.checked = checked; // состояние выбрано в набор или нет
 
-            this.button = document.createElement('button');
+            this.button = document.createElement('button'); // кнопка со стилями и содержимым
             this.button.className = 'btn';
-            this.button.style.margin = '0.5em'
-            this.button.style.backgroundColor = this.color;
-            this.button.style.display = 'block';
+            this.button.style = `margin:0.5em;background-color:${this.color};display:block;width:100%`;
             this.button.innerHTML = `${this.name} <span>${this.tag}</span>`;
         }
     }
 
-    class Interface {
+    class Interface { // объявляю класс для создания объекта взаимодействия пользователя с программой
 
-        constructor(tagList) {
-            this.tagList = tagList;
-            this.markupList = [];
-            this.nextId = 1;
-            this.selection = null;
-            this.selectedTagList = [];
+        constructor(tagList) { // у обекта есть свои:
+            this.tagList = tagList; // список всех видов меток
+            this.markupList = []; // пока пустой список проставленных меток
+            this.nextId = 1; // id следующей поставленной метки
+            this.selection = null; // пустая переменная где будем хранить обЪект выделения слов в тексте
 
+            //создаем переменные связанные с хтмл-элементами на странице
             this.styles = document.getElementById('styles');
             this.saveBtn = document.getElementById('saveBtn');
             this.p = document.getElementById('p');
@@ -130,50 +162,49 @@
             this.selectTagsForm = document.getElementById('selectTags');
             this.deleteAllBtn = document.getElementById('deleteAll');
             this.detailsElement = document.getElementById('details');
+            this.addTagForm = document.getElementById('addTag');
+            this.addTagDetails = document.getElementById('addTagDetails');
 
-            this.renderSelectList();
-            this.addListeners();
+            this.renderSelectList(); // идем отрисовывать список-форму выбора меток
+            this.addListeners(); // идем навешивать обработчики событий на странице
         }
 
-        renderSelectList() {
-            this.tagList.map((item, index) => {
+        renderSelectList() { // рисуем форму выбора меток
+            this.selectTagsForm.innerHTML = ''; // очищаем на странице форму если там что-то уже есть
+            this.tagList.map((item, index) => { // проходим по массиву видов меток
                 const div = document.createElement('div');
-                div.innerHTML = `<label style=" background-color:${item.color};
-            padding:0.5em;
-            border-radius: 5px;"><input id=${index} type="checkbox" class="mr-1" checked>${item.button.innerHTML}</label>`;
-                div.appendChild(item.button);
-                this.selectTagsForm.appendChild(div);
+                div.innerHTML =
+                    `<label style=" background-color:${item.color};padding:0.5em;
+                    border-radius: 5px; width: 100%">
+                    <input id=${index} type="checkbox" class="mr-1" ${item.checked ? "checked" : null}>
+                    ${item.button.innerHTML}
+                 </label>`; // создаем контейнер с чекбоксом и названием вида метки
+                this.selectTagsForm.appendChild(div); //добавляем этот элемент в форму
             })
 
-            this.defineSelectedTags()
+            this.renderTagList() //идем отрисовывать список выбранных кнопок-меток
         }
 
-        defineSelectedTags() {
-            this.selectedTagList = [];
-            for (const input of this.selectTagsForm) {
-                input.checked ? this.selectedTagList.push(this.tagList[input.id]) : null;
-            }
-
-            this.renderTagList()
-        }
-
-        renderTagList() {
-            this.tagListElement.innerHTML = '';
-            this.selectedTagList.map((item) => {
-                this.tagListElement.appendChild(item.button);
-                this.styles.textContent += `
+        renderTagList() { // отрисовываем список кнопок
+            this.tagListElement.innerHTML = ''; // очищаем на странице список, если он+ есть
+            this.tagList.map((item) => { // проходим по массиву видов меток
+                if (item.checked) { //если метка выбрана
+                    this.tagListElement.appendChild(item.button); //то кнопку рисуем на страницу
+                    this.styles.textContent += `
             ${item.tag}{
             background-color:${item.color};
             padding:2px;
             border-radius: 5px;
             }
-            `;
+            `; //добавляем стили для меток в тексте
+                }
 
-                item.button.addEventListener('click', () => {
-                    if (this.selection) {
-                        if (this.selection.anchorNode.parentElement === this.p) {
-                            const range = new Range();
-                            if (this.selection.focusOffset > this.selection.anchorOffset) {
+
+                item.button.addEventListener('click', () => { //когда на кнопку кликают
+                    if (this.selection) { // смотрим если выделенный обЪект на странице
+                        if (this.selection.anchorNode.parentElement === this.p) { // если есть проверяем он на в зоне текста?
+                            const range = new Range(); // если да определяем объект-диапазон выделенного текста
+                            if (this.selection.focusOffset > this.selection.anchorOffset) { //определяем границы диапазона
                                 range.setStart(this.selection.anchorNode, this.selection.anchorOffset);
                                 range.setEnd(this.selection.anchorNode, this.selection.focusOffset);
                             } else {
@@ -181,15 +212,15 @@
                                 range.setEnd(this.selection.anchorNode, this.selection.anchorOffset);
                             }
 
-                            if (range.toString() !== "") {
-                                const tag = document.createElement(`${item.tag}`);
-                                tag.id = String(this.nextId++);
-                                range.surroundContents(tag);
+                            if (range.toString() !== "") { // если выделенный текст не пустой
+                                const tag = document.createElement(`${item.tag}`); //создаем тэг метки для текста
+                                tag.id = String(this.nextId++); // добавляем id метки, сам счетчик id прибавляем на единицу
+                                range.surroundContents(tag); // обрамляем выделеный текст тэгом
                                 tag.innerHTML = tag.textContent + `
                     <span>${item.tag}</span>`;
-                                this.markupList.push(tag);
-                                this.renderMarkupList();
-                                this.selection = null;
+                                this.markupList.push(tag); //добавляем метку в список выделенных меток
+                                this.renderMarkupList(); //идем отрисовывать список выделенных меток
+                                this.selection = null; // очищаем переменную в которой вранится выделенный текст
                             }
                         }
                     }
@@ -197,65 +228,77 @@
             })
         }
 
-        addListeners() {
+        addListeners() { //добавляем слушателей событий
 
-            this.selectTagsForm.addEventListener('change', () => {
-                this.defineSelectedTags();
+            this.selectTagsForm.addEventListener('change', () => { // когда в форме выбора меток чекбоксы меняются
+
+                for (let i = 0; i < this.selectTagsForm.length; i++) {
+                    const input = this.selectTagsForm[i];
+                    input.checked ? this.tagList[i].checked = true : this.tagList[i].checked = false;
+                } //мы синхронизируем выбор меток со списком кнопок
+                this.renderTagList(); // идем перерисовывать список кнопок
             })
 
-            this.detailsElement.addEventListener('click', () => {
-                this.tagListElement.style.display = 'none';
-
-                setTimeout(() => {
-                    this.detailsElement.open ? this.tagListElement.style.display = 'none'
-                        : this.tagListElement.style.display = 'block';
-                }, 0)
-
+            this.detailsElement.addEventListener('click', () => { //когда кликаем по раскрывающейся форме-списку
+                this.checkOpenDetails();  //идем проверять она закрыта или нет
             })
 
-            document.addEventListener('selectionchange', () => {
-                this.linkElement.style.display = 'none';
-                this.selection = document.getSelection();
+            this.addTagDetails.addEventListener('click', () => {//когда кликаем по раскрывающейся форме добавления новых меток
+                this.checkOpenDetails(); //идем проверять она закрыта или нет
+            })
+
+            document.addEventListener('selectionchange', () => { // если пользователь что-то выделяет на странице
+                this.selection = document.getSelection(); // сохраняем информацию о выделенном тексте в переменную
             });
 
-            this.deleteAllBtn.addEventListener('click', () => {
+            this.deleteAllBtn.addEventListener('click', () => { // если кликают по кнопке удалить все метки
                 for (let i = this.listElement.children.length - 1; i >= 0; i--) {
                     const el = this.listElement.children[i];
-                    el.querySelector('div').click()
+                    el.querySelector('div').click() // то программа сама кликает на все мусорные баки
                 }
             })
 
-            this.saveBtn.addEventListener('click', () => {
-                const xmlStr =
+            this.saveBtn.addEventListener('click', () => { //когда кликают по кнопке сохранить как xml
+                const xmlStr = // сохраняем текст с тэгами в строку
                     `<?xml version="1.0" encoding="UTF-8"?><markup>${this.p.innerHTML}</markup>`;
-                this.linkElement.href = 'data:text/plain,' + xmlStr;
-                this.linkElement.click();
+                this.linkElement.href = 'data:text/plain,' + xmlStr;// оборачиваем текст в файл и в ссылку для скачивания
+                this.linkElement.click(); // скачиваем файл пользователю
             });
 
-            this.insertForm[1].addEventListener('click', (e) => {
+            this.insertForm[1].addEventListener('click', (e) => { // когда кликают кнопку формы вставки текста
                 e.preventDefault();
-                this.p.innerHTML = this.insertForm[0].value;
-                document.getElementsByTagName('details')[0].open = false;
+                this.p.innerHTML = this.insertForm[0].value; // в зону текстка пишем то что в ставлено в поле формы
+                document.getElementsByTagName('details')[0].open = false;//закрываем форму
             })
 
-            this.loadForm[1].addEventListener('click', e => {
+            this.loadForm[1].addEventListener('click', e => {//когда кликают кнопку формы загрузки файла
                 e.preventDefault();
                 const file = this.loadForm[0].files[0];
-                const reader = new FileReader();
-                reader.addEventListener('load', (e) => {
+                const reader = new FileReader(); //
+                reader.addEventListener('load', (e) => { //когда файл загрузился
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(`${e.target.result}`, 'text/xml')
-                    this.p.innerHTML = doc.children[0].innerHTML;
-                    this.markupList = [...doc.children[0].children];
-                    console.log(this.markupList);
-                    this.renderMarkupList();
-                    document.getElementsByTagName('details')[0].open = false;
+                    this.p.innerHTML = doc.children[0].innerHTML; // мы пишем его в зону с текстом без корневого тега
+                    this.markupList = [...doc.children[0].children]; // выделяем из текста файла все метки
+                    this.renderMarkupList();// отрисовываем список меток из текста
+                    document.getElementsByTagName('details')[0].open = false; //закрываем форму загрузки файла
                 })
                 reader.readAsText(file);
             })
+
+            this.addTagForm[4].addEventListener('click', e => { // когда кликают сохранить в форме добавления новой метки
+                e.preventDefault();
+                document.getElementById('addTagDetails').open = false; //закрываем форму
+                this.tagList.push(new Tag( //добавляем новый вид метки в список меток
+                    this.addTagForm[0].value, //берем из формы значения для новой метки
+                    this.addTagForm[1].value,
+                    this.addTagForm[3].value
+                ));
+                this.renderSelectList(); //идем перерисовывать форму выбора меток
+            });
         }
 
-        renderMarkupList() {
+        renderMarkupList() { // перерисовка списка поставленных меток
             this.listElement.innerHTML = '';
             this.markupList.map(element => {
                 const li = document.createElement('li');
@@ -266,47 +309,44 @@
                 removeBtn.className = 'ml-2'
                 removeBtn.innerHTML = `<svg  viewBox="0 0 12 16" width="12" height="16" aria-hidden="true">
                  <path fill-rule="evenodd" d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"></path>
-                 </svg>`
+                 </svg>`; // добавляем мусорный бак к элементу списка меток
                 li.appendChild(removeBtn);
                 this.listElement.appendChild(li);
 
-                removeBtn.addEventListener('click', () => {
-                    document.getElementById(element.id) ?
+                removeBtn.addEventListener('click', () => { // когда кликают по мусорному баку
+                    document.getElementById(element.id) ? //если есть метка с таким id в тексте
                         document.getElementById(element.id).outerHTML = element.firstChild.textContent
-                        : null;
-                    this.listElement.removeChild(li);
-                    this.markupList = this.markupList.filter(value => value !== element)
-                    this.renderMarkupList();
+                        : null; // то заменяем тэг в тексте на содержимое этого тэга
+                    this.listElement.removeChild(li); // удаляем метку из списка меток
+                    this.markupList = this.markupList.filter(value => value !== element) // удаляем из списка меток метку
+                    this.renderMarkupList(); // идем переримовывать список поставленных меток
                 })
             })
         }
+
+        checkOpenDetails() { // проверяем открыты ли формочки
+            this.tagListElement.style.display = 'none'; // прячем список кнопок
+            setTimeout(() => {
+                this.detailsElement.open ? this.tagListElement.style.display = 'none'
+                    : this.addTagDetails.open ? this.tagListElement.style.display = 'none'
+                    : this.tagListElement.style.display = 'block';
+            }, 0) //если список формочки закрыты то список кнопок показываем
+        }
     }
 
-    const personTag = new Tag('Персона', 'person', 'rgba(100%, 0%, 0%, 0.4)');
-    const locationTag = new Tag('Место', 'loc', 'rgba(0%, 0%, 100%, 0.4)');
-    const timeTag = new Tag('Время', 'time', 'rgba(0%, 100%, 0%, 0.4)');
-    const dateTag = new Tag('Дата', 'date', 'rgba(100%, 100%, 0%, 0.4)');
-    const tagList = [];
+    const tagList = []; // создаем список видов меток
+    //добавляем в список метки:
+    tagList.push(new Tag('Персона', 'person', 'rgba(100%, 0%, 0%, 0.4)'));
+    tagList.push(new Tag('Место', 'loc', 'rgba(0%, 0%, 100%, 0.4)'));
+    tagList.push(new Tag('Дата', 'date', 'rgba(100%, 100%, 0%, 0.4)'));
+    tagList.push(new Tag('Время', 'time', 'rgba(0%, 100%, 0%, 0.4)'));
+    tagList.push(new Tag("Организация", "org", 'rgba(0%, 100%, 100%, 0.4)'));
+    tagList.push(new Tag("Должность", "post", 'rgba(100%, 50%, 100%, 1)'));
+    tagList.push(new Tag("Количество", "num", 'rgba(0%, 100%, 0%, 1)'));
+    tagList.push(new Tag("Валюта", "cur", 'rgba(100%, 50%, 25%, 1)'));
 
-    tagList.push(personTag);
-    tagList.push(locationTag);
-    tagList.push(dateTag);
-    tagList.push(timeTag);
-    tagList.push(new Tag(
-        "Организация", "org", 'rgba(0%, 100%, 100%, 0.4)'
-    ));
-    tagList.push(new Tag(
-        "Должность", "post", 'rgba(100%, 50%, 100%, 1)'
-    ));
-    tagList.push(new Tag(
-        "Количество", "num", 'rgba(0%, 100%, 0%, 1)'
-    ));
-    tagList.push(new Tag(
-        "Валюта", "cur", 'rgba(100%, 50%, 25%, 1)'
-    ));
-
-    const view = new Interface(tagList);
-
+    const view = new Interface(tagList);//создаем объект класса Interface
+    //добавляем на страницу текст:
     view.p.textContent = `Песков заявил о возможном обращении Путина к россиянам 9 мая
 16:15 02.05.2020
 10940
@@ -318,7 +358,6 @@
 
 До этого глава государства несколько раз обращался к россиянам, последний раз — 28 апреля. Тогда он озвучил результаты работы по мобилизации промышленности и системы здравоохранения, а также дал новые поручения, призванные поддержать экономику и помочь регионам справиться с коронавирусом.
 Кроме того, Путин объявил о продлении нерабочих дней до 11 мая.`;
-
 </script>
 </body>
 </html>
